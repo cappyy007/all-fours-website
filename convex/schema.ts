@@ -16,4 +16,12 @@ export default defineSchema({
   })
     .index("email", ["email"])
     .index("phone", ["phone"]),
+  products: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    price: v.number(),
+    category: v.string(),
+    stock: v.number(),
+    image: v.optional(v.string()),
+  }).index("category", ["category"]),
 });

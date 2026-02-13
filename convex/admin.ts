@@ -53,3 +53,69 @@ export const deleteUser = mutation({
         await ctx.db.delete(args.userId);
     },
 });
+
+// Product Operations
+
+export const listProducts = query({
+    args: {},
+    handler: async (ctx) => {
+        const isUserAdmin = await isAdmin(ctx);
+        if (!isUserAdmin) {
+            throw new Error("Unauthorized: Admin access required");
+        }
+
+        return await ctx.db.query("products").collect();
+    },
+});
+
+export const createProduct = mutation({
+    args: {
+        name: v.string(),
+        description: v.optional(v.string()),
+        price: v.number(),
+        category: v.string(),
+        stock: v.number(),
+        image: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        const isUserAdmin = await isAdmin(ctx);
+        if (!isUserAdmin) {
+            throw new Error("Unauthorized: Admin access required");
+        }
+
+        await ctx.db.insert("products", args);
+    },
+});
+
+export const updateProduct = mutation({
+    args: {
+        id: v.id("products"),
+        name: v.optional(v.string()),
+        description: v.optional(v.string()),
+        price: v.optional(v.number()),
+        category: v.optional(v.string()),
+        stock: v.optional(v.number()),
+        image: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        const isUserAdmin = await isAdmin(ctx);
+        if (!isUserAdmin) {
+            throw new Error("Unauthorized: Admin access required");
+        }
+
+        const { id, ...fields } = args;
+        await ctx.db.patch(id, fields);
+    },
+});
+
+export const deleteProduct = mutation({
+    args: { id: v.id("products") },
+    handler: async (ctx, args) => {
+        const isUserAdmin = await isAdmin(ctx);
+        if (!isUserAdmin) {
+            throw new Error("Unauthorized: Admin access required");
+        }
+
+        await ctx.db.delete(args.id);
+    },
+});

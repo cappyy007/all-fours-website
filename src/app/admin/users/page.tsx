@@ -4,8 +4,26 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { Id } from "../../../../convex/_generated/dataModel";
+import { MoreHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge"; // Check if badge exists or use basic span
 
 export default function UsersPage() {
     const users = useQuery(api.admin.listUsers);
@@ -45,60 +63,76 @@ export default function UsersPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-                <span className="text-sm text-gray-500">{users.length} users found</span>
+                <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+                <Button>Add User</Button> {/* Placeholder for now */}
             </div>
 
-            <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+            <div className="rounded-md border bg-white">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[80px]">Avatar</TableHead>
+                            <TableHead>Namr</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {users.map((user) => (
-                            <tr key={user._id}>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                        <Avatar className="h-8 w-8 mr-3">
-                                            <AvatarImage src={user.image} alt={user.name} />
-                                            <AvatarFallback>{user.name?.charAt(0).toUpperCase() || "?"}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="text-sm font-medium text-gray-900">{user.name || "Anonymous"}</div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {user.email || "No email"}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <select
-                                        value={user.role || "user"}
-                                        onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                                        disabled={loadingId === user._id}
-                                        className="block w-full rounded-md border-gray-300 py-1.5 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm sm:leading-6 border px-2"
-                                    >
-                                        <option value="user">User</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => handleDelete(user._id)}
-                                        disabled={loadingId === user._id}
-                                    >
-                                        Delete
-                                    </Button>
-                                </td>
-                            </tr>
+                            <TableRow key={user._id}>
+                                <TableCell>
+                                    <Avatar>
+                                        <AvatarImage src={user.image} alt={user.name} />
+                                        <AvatarFallback>{user.name?.charAt(0).toUpperCase() || "?"}</AvatarFallback>
+                                    </Avatar>
+                                </TableCell>
+                                <TableCell className="font-medium">{user.name || "Anonymous"}</TableCell>
+                                <TableCell>{user.email}</TableCell>
+                                <TableCell>
+                                    {user.role === "admin" ? (
+                                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                                            Admin
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                                            User
+                                        </span>
+                                    )}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <span className="sr-only">Open menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            <DropdownMenuItem
+                                                onClick={() => navigator.clipboard.writeText(user._id)}
+                                            >
+                                                Copy User ID
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onClick={() => handleRoleChange(user._id, user.role === "admin" ? "user" : "admin")}>
+                                                {user.role === "admin" ? "Demote to User" : "Promote to Admin"}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem
+                                                onClick={() => handleDelete(user._id)}
+                                                className="text-red-600"
+                                            >
+                                                Delete User
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
                         ))}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             </div>
         </div>
     );
