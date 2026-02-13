@@ -1,9 +1,9 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, QueryCtx, MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { auth } from "./auth";
 
 // Helper to check if the current user is an admin
-async function isAdmin(ctx: any) {
+async function isAdmin(ctx: QueryCtx | MutationCtx) {
     const userId = await auth.getUserId(ctx);
     if (!userId) return false;
 
